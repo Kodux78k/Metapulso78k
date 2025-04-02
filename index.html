@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>METAUX78K</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .circle {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      animation: pulse 2.4s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.4; }
+    }
+
+    .meta-click {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0; left: 0;
+      z-index: 1;
+    }
+
+    audio { display: none; }
+  </style>
+</head>
+<body>
+  <div class="circle"></div>
+  <div class="meta-click" onclick="iniciarMeta()"></div>
+  <audio id="thunder" src="https://upload.wikimedia.org/wikipedia/commons/0/08/Thunder.ogg" preload="auto"></audio>
+
+  <script>
+    function iniciarMeta() {
+      document.getElementById("thunder").play();
+      document.body.style.transition = "opacity 1.2s ease";
+      document.body.style.opacity = 0;
+      setTimeout(() => {
+        window.location.href = "MetaLux_UI_FINAL_CORRIGIDO_FINAL_DESIGN_OK.html";
+      }, 1200);
+    }
+  </script>
+</body>
+</html>
