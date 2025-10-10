@@ -1,111 +1,148 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Solus · Arquétipo</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: transparent;
-      overflow: hidden;
-      height: 100%;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 0;
-    }
-    .btn-activate {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid #f97316;
-      color: #f97316;
-      font-weight: bold;
-      padding: 12px 20px;
-      border-radius: 12px;
-      backdrop-filter: blur(6px);
-      cursor: pointer;
-      z-index: 10;
-      transition: all 0.2s ease-in-out;
-    }
-    .btn-activate:hover {
-      background: rgba(56, 189, 248, 0.3);
-      box-shadow: 0 0 10px #f97316;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Solus · Tri-Ring ASCII Minimal</title>
+<style>
+  :root {
+    --color: #f97316;
+    --bg: transparent;
+    --r1: min(38vmin, 260px);
+    --r2: min(29vmin, 200px);
+    --r3: min(20vmin, 140px);
+    --n1: 13; --n2: 10; --n3: 8;
+    --speed1: 34s; --speed2: 24s; --speed3: 18s;
+    --font1: clamp(12px, 3.0vmin, 24px);
+    --font2: clamp(11px, 2.6vmin, 20px);
+    --font3: clamp(10px, 2.2vmin, 18px);
+    --faceSize: clamp(30px, 10vmin, 76px);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; width:100%; height:100%; background: var(--bg); }
+  body {
+    display:grid; place-items:center;
+    color: var(--color);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    user-select:none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  .stage { position:relative; width:min(86vmin, 580px); height:min(86vmin, 580px); }
+
+  /* Tri-Rings */
+  .ring { position:absolute; inset:0; transform-origin: 50% 50%; z-index:2; }
+  .r1 { animation: rotCW var(--speed1) linear infinite; }
+  .r2 { animation: rotCCW var(--speed2) linear infinite; }
+  .r3 { animation: rotCW var(--speed3) linear infinite; }
+  @keyframes rotCW  { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+  @keyframes rotCCW { from{transform:rotate(0)} to{transform:rotate(-360deg)} }
+
+  .g1, .g2, .g3 {
+    position:absolute; left:50%; top:50%;
+    line-height:1; opacity:.9;
+    text-shadow: 0 0 0.25em color-mix(in oklab, var(--color) 70%, transparent);
+  }
+  .g1 { font-size: var(--font1); transform: rotate(var(--a)) translate(var(--r1)) rotate(calc(-1*var(--a))); }
+  .g2 { font-size: var(--font2); transform: rotate(var(--a)) translate(var(--r2)) rotate(calc(-1*var(--a))); }
+  .g3 { font-size: var(--font3); transform: rotate(var(--a)) translate(var(--r3)) rotate(calc(-1*var(--a))); }
+
+  /* Center face */
+  .center {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    z-index:3; pointer-events:none; text-align:center;
+  }
+  .face {
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size: var(--faceSize); line-height:1;
+    filter: drop-shadow(0 0 0.25rem color-mix(in oklab, var(--color) 65%, transparent));
+    letter-spacing: 0.02em;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.06);} }
+
+  .safe .r1 { animation-duration: 120s; }
+  .safe .r2 { animation-duration: 100s; }
+  .safe .r3 { animation-duration: 90s; }
+  @media (prefers-reduced-motion: reduce) {
+    .r1 { animation-duration: 140s; }
+    .r2 { animation-duration: 120s; }
+    .r3 { animation-duration: 100s; }
+    .face { animation: none; }
+  }
+</style>
+<script>
+  (function() {
+    try {
+      var q = new URLSearchParams(location.search);
+      if (q.get('bg') === 'dark') {
+        document.documentElement.style.setProperty('--bg', '#0b1e3b');
+      }
+      if (q.get('safe') === '1' || q.get('safe') === 'true') {
+        document.documentElement.classList.add('safe');
+      }
+    } catch(e) {}
+    window.addEventListener('load', function() {
+      if (window.parent) {
+        try { window.parent.postMessage({ type:'ATIVAR_ARQUETIPO', id:'solus' }, '*'); } catch(_e){}
+      }
+    });
+  })();
+</script>
 </head>
 <body>
+  <div class="stage" role="img" aria-label="Animação ritual com três anéis ASCII e face central animada do arquétipo Solus" data-arch="solus">
+    <!-- Tri-Ring ASCII -->
+    <div class="ring r1"><span class="g1" style="--a:calc(0 * (360deg / 13));--d:0.00s">&gt;</span>
+      <span class="g1" style="--a:calc(1 * (360deg / 13));--d:0.10s">&lt;</span>
+      <span class="g1" style="--a:calc(2 * (360deg / 13));--d:0.20s">^</span>
+      <span class="g1" style="--a:calc(3 * (360deg / 13));--d:0.30s">*</span>
+      <span class="g1" style="--a:calc(4 * (360deg / 13));--d:0.40s">&gt;</span>
+      <span class="g1" style="--a:calc(5 * (360deg / 13));--d:0.50s">&lt;</span>
+      <span class="g1" style="--a:calc(6 * (360deg / 13));--d:0.60s">^</span>
+      <span class="g1" style="--a:calc(7 * (360deg / 13));--d:0.70s">*</span>
+      <span class="g1" style="--a:calc(8 * (360deg / 13));--d:0.80s">&gt;</span>
+      <span class="g1" style="--a:calc(9 * (360deg / 13));--d:0.90s">&lt;</span>
+      <span class="g1" style="--a:calc(10 * (360deg / 13));--d:1.00s">^</span>
+      <span class="g1" style="--a:calc(11 * (360deg / 13));--d:1.10s">*</span>
+      <span class="g1" style="--a:calc(12 * (360deg / 13));--d:1.20s">&gt;</span></div>
+    <div class="ring r2"><span class="g2" style="--a:calc(0 * (360deg / 10));--d:0.00s">&gt;</span>
+      <span class="g2" style="--a:calc(1 * (360deg / 10));--d:0.10s">&lt;</span>
+      <span class="g2" style="--a:calc(2 * (360deg / 10));--d:0.20s">*</span>
+      <span class="g2" style="--a:calc(3 * (360deg / 10));--d:0.30s">&gt;</span>
+      <span class="g2" style="--a:calc(4 * (360deg / 10));--d:0.40s">&lt;</span>
+      <span class="g2" style="--a:calc(5 * (360deg / 10));--d:0.50s">*</span>
+      <span class="g2" style="--a:calc(6 * (360deg / 10));--d:0.60s">&gt;</span>
+      <span class="g2" style="--a:calc(7 * (360deg / 10));--d:0.70s">&lt;</span>
+      <span class="g2" style="--a:calc(8 * (360deg / 10));--d:0.80s">*</span>
+      <span class="g2" style="--a:calc(9 * (360deg / 10));--d:0.90s">&gt;</span></div>
+    <div class="ring r3"><span class="g3" style="--a:calc(0 * (360deg / 8));--d:0.00s">^</span>
+      <span class="g3" style="--a:calc(1 * (360deg / 8));--d:0.10s">.</span>
+      <span class="g3" style="--a:calc(2 * (360deg / 8));--d:0.20s">^</span>
+      <span class="g3" style="--a:calc(3 * (360deg / 8));--d:0.30s">.</span>
+      <span class="g3" style="--a:calc(4 * (360deg / 8));--d:0.40s">^</span>
+      <span class="g3" style="--a:calc(5 * (360deg / 8));--d:0.50s">.</span>
+      <span class="g3" style="--a:calc(6 * (360deg / 8));--d:0.60s">^</span>
+      <span class="g3" style="--a:calc(7 * (360deg / 8));--d:0.70s">.</span></div>
 
-<canvas id="dnaCanvas"></canvas>
-<button class="btn-activate" onclick="sendActivation()">🧬 Ativar Solus</button>
+    <!-- Center face (frames) -->
+    <div class="center"><span class="face" id="face"></span></div>
+  </div>
 
 <script>
-  const canvas = document.getElementById('dnaCanvas');
-  const ctx = canvas.getContext('2d');
-  let w, h;
-  function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
-  
-
-  // [INJECTED_ELEMENT_CONFIG]
-  const ELEMENT = "fire";
-  const ELEMENT_CFG = {"color": "#f97316", "speed_min": 0.004, "speed_max": 0.007, "size_min": 1.2, "size_max": 2.6, "y_factor": 0.65, "radius_pulse_amp": 2.0, "radius_pulse_freq": 2.5, "alpha_min": 0.5, "alpha_max": 1.0, "shadow_blur": 12, "composite": "lighter"};
-
-  function randIn(min, max) { return min + Math.random() * (max - min); }
-  function lerp(a, b, t) { return a + (b - a) * t; }
-    
-const particles = Array.from({length: 96}, () => ({
-    angle: Math.random() * Math.PI * 2,
-    baseRadius: 60 + Math.random() * 80,
-    radiusOffset: Math.random() * Math.PI * 2,
-    speed: randIn(ELEMENT_CFG.speed_min, ELEMENT_CFG.speed_max),
-    size: randIn(ELEMENT_CFG.size_min, ELEMENT_CFG.size_max),
-    alpha: randIn(ELEMENT_CFG.alpha_min, ELEMENT_CFG.alpha_max)
-  }));
-
-  function draw() {
-    ctx.clearRect(0, 0, w, h);
-    ctx.globalCompositeOperation = ELEMENT_CFG.composite;
-    ctx.fillStyle = ELEMENT_CFG.color;
-    ctx.shadowColor = ELEMENT_CFG.color;
-    ctx.shadowBlur = ELEMENT_CFG.shadow_blur;
-    particles.forEach(p => {
-      p.angle += p.speed;
-      const pulse = Math.sin(p.angle + p.radiusOffset) * ELEMENT_CFG.radius_pulse_amp;
-      const radius = p.baseRadius + pulse;
-      const x = w/2 + Math.cos(p.angle) * radius;
-      const y = h/2 + Math.sin(p.angle * 1.2) * radius * ELEMENT_CFG.y_factor;
-      ctx.globalAlpha = (ELEMENT === 'fire') ? (0.7 + 0.3 * Math.random()) : p.alpha;
-      ctx.beginPath();
-      ctx.arc(x, y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-    });
-    requestAnimationFrame(draw);
-  }
-
-  draw();
-
-  function sendActivation() {
-    if (window.parent) {
-      window.parent.postMessage({ type: 'ATIVAR_ARQUETIPO', id: 'solus' }, '*');
-    }
-  }
+(function(){
+  var frames = [">", ">>", ">>>"];
+  var face = document.getElementById('face');
+  var idx = 0;
+  function tick(){ face.textContent = frames[idx]; idx = (idx + 1) % frames.length; }
+  tick();
+  var base = 520;
+  var q = new URLSearchParams(location.search);
+  var SAFE = (q.get('safe')==='1' || q.get('safe')==='true' || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
+  setInterval(tick, SAFE ? base*2 : base);
+})();
 </script>
-
 </body>
 </html>

@@ -1,11 +1,8 @@
-Farinhas Cósmicas Vivas™ — Pack ASCII (12 arquétipos)
+Farinhas Cósmicas V3.4 — Minimal (No-CDN · NoCircle · NoPrimaryOrbit)
 
-✔ Fundo transparente · ✔ Sem botões · ✔ 100% CSS (sem CDN) · ✔ Mobile-first
+• Só os 3 anéis ASCII + face central em frames (3–5).
+• Sem círculo tracejado, sem órbita primária, sem shaders/CDNs — 100% DOM+CSS+JS.
+• Densidade/velocidade únicas por arquétipo. Fundo transparente.
+• Safe mode: ?safe=1. Fundo opcional: ?bg=dark.
 
-Como editar rapidamente:
-- Cor: altere `--color` no :root (por arquétipo), já mapeada por elemento.
-- Velocidade: mude `animation-duration` de `.ring`.
-- Quantidade de glifos no anel: duplique/remova `<span class="glyph">` ou gere via padrão.
-- Frames da carinha: no inline style de `.face`, troque `--f1..--f4` (strings).
-
-Respeita `prefers-reduced-motion`.
+Personalização: edite `frames` (JS), `base` (ms), e variáveis CSS: `--r*`, `--n*`, `--speed*`, `--color`, `--faceSize`.
