@@ -1,135 +1,111 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Atlas · Farinha ASCII</title>
-<style>
-  :root {
-    --color: #a16207;
-    --n: 8;
-    --r: min(34vmin, 220px);
-    --fontSize: clamp(14px, 3.6vmin, 28px);
-    --labelSize: clamp(12px, 2.4vmin, 16px);
-    --bg: transparent;
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin:0; padding:0;
-    height:100%; width:100%;
-    background: var(--bg);
-  }
-  body {
-    display:grid; place-items:center;
-    color: var(--color);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-    user-select:none;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  .stage {
-    position:relative;
-    width:min(80vmin, 520px);
-    height:min(80vmin, 520px);
-  }
-  .ring {
-    position:absolute; inset:0;
-    animation: ring-rot 28s linear infinite;
-    transform-origin: 50% 50%;
-  }
-  @keyframes ring-rot {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
-
-  .glyph {
-    position:absolute; left:50%; top:50%;
-    transform: rotate(calc(var(--angle))) translate(var(--r)) rotate(calc(-1*var(--angle)));
-    font-size: var(--fontSize);
-    line-height:1;
-    opacity:.9;
-    text-shadow: 0 0 0.25em color-mix(in oklab, var(--color) 70%, transparent);
-    animation: blink 2.6s ease-in-out infinite alternate, bob 5.2s ease-in-out infinite;
-    animation-delay: var(--delay);
-  }
-  @keyframes blink {
-    from { opacity:.55; transform: rotate(calc(var(--angle))) translate(var(--r)) rotate(calc(-1*var(--angle))) scale(0.95); }
-    to   { opacity:.95; transform: rotate(calc(var(--angle))) translate(var(--r)) rotate(calc(-1*var(--angle))) scale(1.05); }
-  }
-  @keyframes bob {
-    0%,100% { letter-spacing: 0px; }
-    50%     { letter-spacing: 1px; }
-  }
-
-  .center {
-    position:absolute; inset:0;
-    display:grid; place-items:center;
-    gap: 1.2vmin;
-  }
-  .face {
-    font-size: clamp(22px, 8vmin, 64px);
-    line-height:1;
-    filter: drop-shadow(0 0 0.25rem color-mix(in oklab, var(--color) 65%, transparent));
-  }
-  .face::after {
-    content: var(--f1);
-    display:inline-block;
-    animation: face-swap 6s steps(1,end) infinite, face-pulse 2.8s ease-in-out infinite;
-  }
-  @keyframes face-pulse {
-    0%,100% { transform: scale(1); opacity: .95; }
-    50%     { transform: scale(1.06) rotate(2deg); opacity: .85; }
-  }
-  @keyframes face-swap {
-    0%     { content: var(--f1); }
-    25%    { content: var(--f2); }
-    50%    { content: var(--f3); }
-    75%    { content: var(--f4); }
-    100%   { content: var(--f1); }
-  }
-
-  .label {
-    font-size: var(--labelSize);
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    opacity: .8;
-  }
-
-  /* Halo sutil */
-  .halo {
-    position:absolute; left:50%; top:50%;
-    transform: translate(-50%,-50%);
-    width: 68%; height: 68%;
-    border: 1px solid color-mix(in oklab, var(--color) 35%, transparent);
-    border-radius: 50%;
-    opacity: .2;
-  }
-
-  /* Menos movimento se preferido */
-  @media (prefers-reduced-motion: reduce) {
-    .ring { animation-duration: 120s; }
-    .glyph { animation: none; }
-    .face::after { animation: face-swap 10s steps(1,end) infinite; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Atlas · Arquétipo</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      overflow: hidden;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+    .btn-activate {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid #a16207;
+      color: #a16207;
+      font-weight: bold;
+      padding: 12px 20px;
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-activate:hover {
+      background: rgba(56, 189, 248, 0.3);
+      box-shadow: 0 0 10px #a16207;
+    }
+  </style>
 </head>
 <body>
-  <div class="stage" role="img" aria-label="Animação ritual ASCII do arquétipo Atlas">
-    <div class="halo" aria-hidden="true"></div>
-    <div class="ring">
-      <span class="glyph" style="--angle:calc(0 * (360deg / 8));--delay:0.00s">.</span>
-      <span class="glyph" style="--angle:calc(1 * (360deg / 8));--delay:0.12s">o</span>
-      <span class="glyph" style="--angle:calc(2 * (360deg / 8));--delay:0.24s">O</span>
-      <span class="glyph" style="--angle:calc(3 * (360deg / 8));--delay:0.36s">#</span>
-      <span class="glyph" style="--angle:calc(4 * (360deg / 8));--delay:0.48s">.</span>
-      <span class="glyph" style="--angle:calc(5 * (360deg / 8));--delay:0.60s">o</span>
-      <span class="glyph" style="--angle:calc(6 * (360deg / 8));--delay:0.72s">O</span>
-      <span class="glyph" style="--angle:calc(7 * (360deg / 8));--delay:0.84s">#</span>
-    </div>
-    <div class="center">
-      <div class="face" style="--f1:'[O]';--f2:'[@]';--f3:'[#]';--f4:'[0]';"></div>
-      <div class="label">[ Atlas ]</div>
-    </div>
-  </div>
+
+<canvas id="dnaCanvas"></canvas>
+<button class="btn-activate" onclick="sendActivation()">🧬 Ativar Atlas</button>
+
+<script>
+  const canvas = document.getElementById('dnaCanvas');
+  const ctx = canvas.getContext('2d');
+  let w, h;
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  
+
+  // [INJECTED_ELEMENT_CONFIG]
+  const ELEMENT = "earth";
+  const ELEMENT_CFG = {"color": "#a16207", "speed_min": 0.001, "speed_max": 0.002, "size_min": 1.8, "size_max": 2.8, "y_factor": 0.5, "radius_pulse_amp": 1.0, "radius_pulse_freq": 0.5, "alpha_min": 0.8, "alpha_max": 1.0, "shadow_blur": 4, "composite": "source-over"};
+
+  function randIn(min, max) { return min + Math.random() * (max - min); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+    
+const particles = Array.from({length: 96}, () => ({
+    angle: Math.random() * Math.PI * 2,
+    baseRadius: 60 + Math.random() * 80,
+    radiusOffset: Math.random() * Math.PI * 2,
+    speed: randIn(ELEMENT_CFG.speed_min, ELEMENT_CFG.speed_max),
+    size: randIn(ELEMENT_CFG.size_min, ELEMENT_CFG.size_max),
+    alpha: randIn(ELEMENT_CFG.alpha_min, ELEMENT_CFG.alpha_max)
+  }));
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    ctx.globalCompositeOperation = ELEMENT_CFG.composite;
+    ctx.fillStyle = ELEMENT_CFG.color;
+    ctx.shadowColor = ELEMENT_CFG.color;
+    ctx.shadowBlur = ELEMENT_CFG.shadow_blur;
+    particles.forEach(p => {
+      p.angle += p.speed;
+      const pulse = Math.sin(p.angle + p.radiusOffset) * ELEMENT_CFG.radius_pulse_amp;
+      const radius = p.baseRadius + pulse;
+      const x = w/2 + Math.cos(p.angle) * radius;
+      const y = h/2 + Math.sin(p.angle * 1.2) * radius * ELEMENT_CFG.y_factor;
+      ctx.globalAlpha = (ELEMENT === 'fire') ? (0.7 + 0.3 * Math.random()) : p.alpha;
+      ctx.beginPath();
+      ctx.arc(x, y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+
+  function sendActivation() {
+    if (window.parent) {
+      window.parent.postMessage({ type: 'ATIVAR_ARQUETIPO', id: 'atlas' }, '*');
+    }
+  }
+</script>
+
 </body>
 </html>
