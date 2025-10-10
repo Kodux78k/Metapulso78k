@@ -1,7 +1,5 @@
 <!doctype html>
 <html lang="pt-BR" style="--arch-overlay: rgba(64, 158, 255, 0.22);"><head>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
   <title>HUB UNO — PROD (safe)</title>
@@ -5184,194 +5182,42 @@ document.getElementById('orbWrap')?.addEventListener('click', function(){ try{ w
 
 
 <script>
-/* ================================================================
-   Dual · Particles "Cell" Renderer with Archetype Colors (Blue-1 safe)
-   - Replaces the existing #particles canvas with a new instance.
-   - Colors follow the current archetype (persisted in localStorage).
-   - Public API: window.setArchetype(name)
-   ================================================================ */
 (function(){
-  const ARCH_KEY = 'dual.archetype';           // localStorage key
-  const DEFAULT_ARCH = 'Nova';                 // default if none stored
-  // Hue palettes (center hue and spread) — tweak to your taste
-  const ARCH_PALETTES = {
-    'Nova':   { hue: 200, spread: 24 }, // ciano celeste
-    'Elysha': { hue: 280, spread: 26 }, // violeta-nebula
-    'Kaion':  { hue: 160, spread: 20 }, // verde-tec
-    'Atlas':  { hue: 30,  spread: 16 }, // âmbar/solar
-    'Serena': { hue: 320, spread: 22 }, // magenta quente
-    'Artemis':{ hue: 210, spread: 18 }, // azul profundo
-    'Pulse':  { hue: 195, spread: 30 }, // aqua vivo
-    'Rhea':   { hue: 45,  spread: 18 }, // ouro suave
-    'Solus':  { hue: 12,  spread: 18 }, // coral
-    'Aion':   { hue: 260, spread: 20 }, // roxo frio
-    'Genus':  { hue: 140, spread: 18 }, // verde bio
-    'Lumine': { hue: 220, spread: 20 }  // azul-luz
-  };
-
-  // Read current archetype from localStorage
-  function getArch(){
-    try { return localStorage.getItem(ARCH_KEY) || DEFAULT_ARCH; }
-    catch(_) { return DEFAULT_ARCH; }
+  function swapExtOnError(img){
+    if (img.dataset._swapped) return;
+    var src = img.getAttribute('src') || '';
+    var m = src.match(/^(.*\/icons\/[^\.]+)\.(svg|png|webp|jpg|jpeg)(.*)$/i);
+    if(!m) return;
+    var base = m[1], ext = m[2], tail = m[3] || '';
+    var next = (ext.toLowerCase()==='svg') ? 'png' : 'svg';
+    img.dataset._swapped = '1';
+    img.src = base + '.' + next + tail;
   }
-  function setArch(name){
-    const key = (name||'').trim();
-    if (!ARCH_PALETTES[key]) return;
-    try { localStorage.setItem(ARCH_KEY, key); } catch(_){}
-    // recolor immediately
-    CURRENT.arch = key;
-    recolor();
-  }
-  window.setArchetype = setArch;
-  window.getArchetype = getArch;
-
-  // Obtain / replace particles canvas safely
-  const oldCanvas = document.getElementById('particles');
-  if (!oldCanvas) return;
-  const parent = oldCanvas.parentNode;
-  const clone = oldCanvas.cloneNode(true);
-  oldCanvas.replaceWith(clone);
-
-  const c = clone;
-  const ctx = c.getContext('2d', { alpha:true });
-  const dpr = Math.min(2, (window.devicePixelRatio||1));
-  let RAF = 0;
-
-  function resize(){
-    const r = c.getBoundingClientRect();
-    c.width  = Math.floor(r.width * dpr);
-    c.height = Math.floor(r.height * dpr);
-  }
-  new ResizeObserver(()=>{ resize(); }).observe(c); resize();
-
-  // "Cell": concentric membrane, cytoplasm glow, drifting organelles
-  const CURRENT = {
-    arch: getArch(),
-    t0: performance.now(),
-    nodes: [],
-    nucleus: { wobbleA: Math.random()*6.28, wobbleB: Math.random()*6.28 }
-  };
-
-  const N = 96; // particles (organelles)
-  function palette(){
-    const p = ARCH_PALETTES[CURRENT.arch] || ARCH_PALETTES[DEFAULT_ARCH];
-    return p;
-  }
-  function rand(min, max){ return min + Math.random()*(max-min); }
-
-  function seed(){
-    CURRENT.nodes = Array.from({length:N}, ()=>{
-      const a  = Math.random()*Math.PI*2;
-      const rr = 0.30 + Math.random()*0.58; // keep inner space for nucleus
-      const s  = (0.15 + Math.random()*0.65) * (Math.random()<0.5?-1:1);
-      const z  = 0.45 + Math.random()*0.55;
-      return { a, r: rr, s, z, hueOffset: rand(-1,1), drift: rand(0.8,1.6) };
+  function init(){
+    document.querySelectorAll('img[src*="/icons/"], img[src^="icons/"]').forEach(function(img){
+      img.addEventListener('error', function(){ swapExtOnError(img); }, { once: true });
     });
+    // Also handle dynamically inserted icons
+    const obs = new MutationObserver(function(muts){
+      muts.forEach(function(m){
+        m.addedNodes.forEach(function(n){
+          if(n.tagName === 'IMG'){
+            if((n.src||'').indexOf('/icons/')>=0 || (n.getAttribute('src')||'').indexOf('icons/')===0){
+              n.addEventListener('error', function(){ swapExtOnError(n); }, { once: true });
+            }
+          } else if(n.querySelectorAll){
+            n.querySelectorAll('img').forEach(function(img){
+              if((img.src||'').indexOf('/icons/')>=0 || (img.getAttribute('src')||'').indexOf('icons/')===0){
+                img.addEventListener('error', function(){ swapExtOnError(img); }, { once: true });
+              }
+            });
+          }
+        });
+      });
+    });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
   }
-  seed();
-
-  function recolor(){
-    // noop: colors are computed per-frame from CURRENT.arch
-  }
-
-  function draw(now){
-    const t = now || performance.now();
-    const dt = t - CURRENT.t0;
-
-    ctx.clearRect(0,0,c.width,c.height);
-    ctx.save();
-    ctx.translate(c.width/2, c.height/2);
-    ctx.globalCompositeOperation = 'lighter';
-
-    const scl = Math.min(c.width, c.height)/2;
-
-    // Cell membrane (rim)
-    (()=>{
-      const grd = ctx.createRadialGradient(0,0, scl*0.15, 0,0, scl*0.98);
-      const P = palette();
-      const h = P.hue;
-      grd.addColorStop(0.00, `hsla(${h}, 90%, 65%, .06)`);
-      grd.addColorStop(0.55, `hsla(${h}, 90%, 55%, .10)`);
-      grd.addColorStop(0.87, `hsla(${h}, 90%, 60%, .16)`);
-      grd.addColorStop(1.00, `hsla(${h}, 90%, 65%, 0)`);
-      ctx.fillStyle = grd;
-      ctx.beginPath(); ctx.arc(0,0, scl*0.98, 0, Math.PI*2); ctx.fill();
-    })();
-
-    // Cytoplasm faint noise swirl
-    (()=>{
-      const swirl = Math.sin(t*0.0013)*0.04;
-      ctx.rotate(swirl);
-      ctx.globalAlpha = 0.08;
-      const P = palette();
-      const h = P.hue + 12;
-      for (let i=0;i<6;i++){
-        const r = scl*(0.25 + i*0.12);
-        ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2);
-        ctx.strokeStyle = `hsla(${h},70%,60%,${0.08 - i*0.01})`;
-        ctx.lineWidth = 2 * (c.width/800);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-      ctx.rotate(-swirl);
-    })();
-
-    // Nucleus (soft pulsing)
-    (()=>{
-      const P = palette();
-      const h = P.hue - 10;
-      const wob = Math.sin(t*0.0016 + CURRENT.nucleus.wobbleA)*0.02 + Math.sin(t*0.0011 + CURRENT.nucleus.wobbleB)*0.015;
-      const r  = scl*(0.18 + wob);
-      const g  = ctx.createRadialGradient(0,0, 0, 0,0, r*1.55);
-      g.addColorStop(0.00, `hsla(${h}, 95%, 75%, .55)`);
-      g.addColorStop(0.45, `hsla(${h}, 90%, 60%, .18)`);
-      g.addColorStop(1.00, `hsla(${h}, 85%, 55%, 0)`);
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
-    })();
-
-    // Organelles (drifting particles)
-    const P = palette();
-    for(const n of CURRENT.nodes){
-      const ang = n.a + t*0.00025*n.s;
-      const rr  = n.r * (0.72 + 0.12*Math.sin(t*0.001 + n.a));
-      const x = Math.cos(ang)*rr*scl;
-      const y = Math.sin(ang)*rr*scl*0.98;
-      const rad = (1.0 + n.z*1.6) * (c.width/900);
-      const hue = P.hue + n.hueOffset * P.spread;
-
-      const g = ctx.createRadialGradient(x,y,0,x,y,rad*4.2);
-      g.addColorStop(0, `hsla(${hue}, 90%, 70%, .88)`);
-      g.addColorStop(1, `hsla(${hue}, 85%, 50%, 0)`);
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(x,y,rad,0,Math.PI*2); ctx.fill();
-    }
-
-    ctx.restore();
-    RAF = requestAnimationFrame(draw);
-  }
-
-  function boot(){
-    cancelAnimationFrame(RAF);
-    RAF = requestAnimationFrame(draw);
-  }
-
-  // If a global archetype selector exists elsewhere, hook it:
-  document.addEventListener('archetype:change', (ev)=>{
-    const name = ev && ev.detail && ev.detail.name;
-    if (name && ARCH_PALETTES[name]) setArch(name);
-  });
-
-  // expose lightweight API
-  window.DUAL_ARCH = {
-    set: setArch,
-    get: getArch,
-    palettes: ARCH_PALETTES
-  };
-
-  // Start with last used or default
-  recolor();
-  boot();
+  if(document.readyState !== 'loading') init(); else document.addEventListener('DOMContentLoaded', init);
 })();
 </script>
 
