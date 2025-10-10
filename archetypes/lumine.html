@@ -28,8 +28,8 @@
       left: 50%;
       transform: translateX(-50%);
       background: rgba(56, 189, 248, 0.15);
-      border: 1px solid #38bdf8;
-      color: #38bdf8;
+      border: 1px solid #e5e7eb;
+      color: #e5e7eb;
       font-weight: bold;
       padding: 12px 20px;
       border-radius: 12px;
@@ -40,14 +40,14 @@
     }
     .btn-activate:hover {
       background: rgba(56, 189, 248, 0.3);
-      box-shadow: 0 0 10px #38bdf8;
+      box-shadow: 0 0 10px #e5e7eb;
     }
   </style>
 </head>
 <body>
 
 <canvas id="dnaCanvas"></canvas>
-<button class="btn-activate" onclick="sendActivation()">🧬 Ativar Lumine</button>
+
 
 <script>
   const canvas = document.getElementById('dnaCanvas');
@@ -57,23 +57,88 @@
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
   }
+  // replaced by DPR-aware resize
+  // [POLYFILL + DPR SCALE]
+  window.requestAnimationFrame = window.requestAnimationFrame
+      || window.webkitRequestAnimationFrame
+      || window.mozRequestAnimationFrame
+      || function(cb){ return setTimeout(cb, 16); };
+
+  let dpr = Math.max(1, window.devicePixelRatio || 1);
+  function applyScale() {
+    // Reset then scale to avoid cumulative scaling on multiple resizes
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+  }
+
+  function resize() {
+    dpr = Math.max(1, window.devicePixelRatio || 1);
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width  = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    canvas.style.width  = w + 'px';
+    canvas.style.height = h + 'px';
+    applyScale();
+  }
   window.addEventListener('resize', resize);
   resize();
 
-  const particles = Array.from({length: 64}, () => ({
+  const PREFERS_REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+
+  
+
+  // [INJECTED_ELEMENT_CONFIG]
+  const ELEMENT = "metal";
+  const ELEMENT_CFG = {"color": "#e5e7eb", "speed_min": 0.0025, "speed_max": 0.004, "size_min": 1.0, "size_max": 1.8, "y_factor": 0.6, "radius_pulse_amp": 1.5, "radius_pulse_freq": 1.6, "alpha_min": 0.6, "alpha_max": 0.95, "shadow_blur": 10, "composite": "lighter"};
+
+  function randIn(min, max) { return min + Math.random() * (max - min); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+    
+const particles = Array.from({length: 96}, () => ({
     angle: Math.random() * Math.PI * 2,
-    radius: 60 + Math.random() * 80,
-    speed: 0.002 + Math.random() * 0.0025,
-    size: 1 + Math.random() * 1.5,
+    baseRadius: 60 + Math.random() * 80,
+    radiusOffset: Math.random() * Math.PI * 2,
+    speed: randIn(ELEMENT_CFG.speed_min, ELEMENT_CFG.speed_max),
+    size: randIn(ELEMENT_CFG.size_min, ELEMENT_CFG.size_max),
+    alpha: randIn(ELEMENT_CFG.alpha_min, ELEMENT_CFG.alpha_max)
   }));
 
   function draw() {
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#38bdf8';
+    // [HALO] anel sutil no centro
+    const haloRx = 120;
+    const haloRy = 120 * ELEMENT_CFG.y_factor;
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    ctx.strokeStyle = ELEMENT_CFG.color;
+    ctx.lineWidth = 0.75;
+    if (ctx.ellipse) {
+      ctx.beginPath();
+      ctx.ellipse(w/2, h/2, haloRx, haloRy, 0, 0, Math.PI*2);
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(w/2, h/2, Math.min(haloRx, haloRy), 0, Math.PI*2);
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    ctx.fillRect(0, 0, w, h);
+    ctx.restore();
+    ctx.globalCompositeOperation = ELEMENT_CFG.composite;
+    ctx.fillStyle = ELEMENT_CFG.color;
+    ctx.shadowColor = ELEMENT_CFG.color;
+    ctx.shadowBlur = ELEMENT_CFG.shadow_blur;
     particles.forEach(p => {
-      p.angle += p.speed;
-      const x = w/2 + Math.cos(p.angle) * p.radius;
-      const y = h/2 + Math.sin(p.angle * 1.2) * p.radius * 0.6;
+      if (PREFERS_REDUCED) { p.angle += p.speed * 0.4; } else { p.angle += p.speed; }
+      const pulse = Math.sin(p.angle + p.radiusOffset) * ELEMENT_CFG.radius_pulse_amp;
+      const radius = p.baseRadius + pulse;
+      const x = w/2 + Math.cos(p.angle) * radius;
+      const y = h/2 + Math.sin(p.angle * 1.2) * radius * ELEMENT_CFG.y_factor;
+      ctx.globalAlpha = (ELEMENT === 'fire') ? (0.7 + 0.3 * Math.random()) : p.alpha;
       ctx.beginPath();
       ctx.arc(x, y, p.size, 0, Math.PI * 2);
       ctx.fill();
